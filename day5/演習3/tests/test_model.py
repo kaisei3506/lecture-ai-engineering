@@ -182,7 +182,7 @@ def test_model_regression_against_previous_version(sample_data, preprocessor):
     current_accuracy = accuracy_score(y_test, y_pred)
     
     # モデルディレクトリにある過去の全モデルを探索
-    past_model_paths = glob.glob(os.path.join(MODEL_DIR, "titanic_model_v*.pkl")
+    past_model_paths = glob.glob(os.path.join(MODEL_DIR, "titanic_model_v*.pkl"))
 
     if not past_model_paths:
         pytest.skip("比較対象となる過去のバージョンのモデルが存在しません")
