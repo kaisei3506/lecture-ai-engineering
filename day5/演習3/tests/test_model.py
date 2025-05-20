@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import time
+import glob
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -171,3 +172,38 @@ def test_model_reproducibility(sample_data, preprocessor):
     assert np.array_equal(
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
+
+
+def test_model_regression_against_previous_version(train_model):
+    """モデルの精度が過去のモデルと比べて劣化していないか確認する"""
+    # 現在のモデルを検証
+    current_model, X_test, y_test = train_model
+    y_pred = current_model.predict(X_test)
+    current_accuracy = accuracy_score(y_test, y_pred)
+
+    # モデルディレクトリにある過去の全モデルを探索
+    past_model_paths = glob.glob(os.path.join(MODEL_DIR, "titanic_model_v*.pkl"))
+
+    if not past_model_paths:
+        pytest.skip("比較対象となる過去のバージョンのモデルが存在しません")
+
+    best_past_accuracy = 0.0
+    best_model_path = None
+
+    for path in past_model_paths:
+        with open(path, "rb") as f:
+            past_model = pickle.load(f)
+        try:
+            y_pred = past_model.predict(X_test)
+            acc = accuracy_score(y_test, y_pred)
+            if acc > best_past_accuracy:
+                best_past_accuracy = acc
+                best_model_path = path
+        except Exception as e:
+            # ロードできなかった場合や特徴量数が一致しない場合などを無視
+            print(f"モデル {path} の評価に失敗しました: {e}")
+            continue
+
+    assert (
+        current_accuracy >= best_past_accuracy
+    ), f"現在のモデルの精度が過去最高({best_past_accuracy:.4f}, {best_model_path})より優れています（現在: {current_accuracy:.4f}）"
