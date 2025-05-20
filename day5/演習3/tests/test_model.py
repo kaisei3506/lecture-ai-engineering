@@ -172,7 +172,7 @@ def test_model_reproducibility(sample_data, preprocessor):
     assert np.array_equal(
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
-    
+
 
 def test_model_regression_against_previous_version(sample_data, preprocessor):
     """モデルの精度が過去のモデルと比べて劣化していないか確認する"""
@@ -180,7 +180,7 @@ def test_model_regression_against_previous_version(sample_data, preprocessor):
     current_model, X_test, y_test = train_model
     y_pred = current_model.predict(X_test)
     current_accuracy = accuracy_score(y_test, y_pred)
-    
+
     # モデルディレクトリにある過去の全モデルを探索
     past_model_paths = glob.glob(os.path.join(MODEL_DIR, "titanic_model_v*.pkl"))
 
